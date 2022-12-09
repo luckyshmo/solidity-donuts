@@ -4,4 +4,4 @@ tasks:
   compile:
     desc: compile contract using solc compiler
     cmds:
-      - solc ./contracts/VendingMachine.sol -o ./build --pretty-json --abi
+      - solc ./contracts/VendingMachine.sol -o ./contracts/abi --pretty-json --abi
