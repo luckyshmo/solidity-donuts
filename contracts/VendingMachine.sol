@@ -25,10 +25,7 @@ contract VendingMachine {
 
     // Purchase donuts from the vending machine
     function purchase(uint256 amount) public payable {
-        require(
-            msg.value >= amount * 1000000 gwei,
-            'You must pay at least 10000000 GWEI per donut'
-        );
+        require(msg.value >= amount * 1000000 gwei, 'You must pay at least 1000000 GWEI per donut');
         require(
             donutBalances[address(this)] >= amount,
             'Not enough donuts in stock to complete this purchase'

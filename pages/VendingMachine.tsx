@@ -1,19 +1,57 @@
-import styles from "../styles/VendingMachine.module.css"
+import styles from '../styles/VendingMachine.module.css'
 import 'bulma/css/bulma.css'
-import Head from "next/head"
-import {ethers} from "ethers"
+import Head from 'next/head'
+import { ethers } from 'ethers'
+import vmContract from '../api/vending'
+import { useState, useEffect } from 'react'
+import getUserContract from '../api/userVending'
 
 export default function VendingMachine() {
+  const [donutsCount, setDonutsCount] = useState('0')
+  const [myDonutsCount, setMyDonutsCount] = useState('0')
+  const [provider, setProvider] = useState<null | ethers.providers.Web3Provider>(null)
+
   const connectWalletHandler = async () => {
     if (window && window.ethereum) {
-      const provider = new ethers.providers.Web3Provider(window.ethereum as any)
-      await provider.send("eth_requestAccounts", []);
-      const signer = provider.getSigner()
-      alert(await signer.getAddress())
+      const userProvider = new ethers.providers.Web3Provider(window.ethereum as any)
+      await userProvider.send('eth_requestAccounts', [])
+      setProvider(userProvider)
+      getMyDonutsHandler(userProvider)
     } else {
-      alert("Please install wallet")
+      alert('Please install wallet')
     }
   }
+
+  const buyDonut = async () => {
+    if (provider) {
+      const contract = getUserContract(provider)
+      contract.purchase(ethers.BigNumber.from(1), {
+        // from: send_account,
+        // to: to_address,
+        // nonce: window.ethersProvider.getTransactionCount(send_account, 'latest'),
+        value: ethers.utils.parseEther('0.001'),
+        gasPrice: 100,
+        gasLimit: 9000000,
+      })
+    } else {
+      alert('Please connect wallet')
+    }
+  }
+
+  const getMyDonutsHandler = async (provider: any) => {
+    const userAddress = await provider.getSigner().getAddress()
+    const myDonuts = await vmContract.donutBalances(userAddress)
+    setMyDonutsCount(myDonuts.toString())
+  }
+
+  const getDonutsHandler = async () => {
+    const balance = await vmContract.getVendingMachineBalance()
+    setDonutsCount(balance.toString())
+  }
+
+  useEffect(() => {
+    getDonutsHandler()
+  }, [provider])
 
   return (
     <div className={styles.main}>
@@ -26,15 +64,21 @@ export default function VendingMachine() {
             <h1>VendingMachine</h1>
           </div>
           <div className="navbar-end">
-            <button onClick={connectWalletHandler} className="button is-primary">Connect Wallet</button>
+            <button onClick={connectWalletHandler} className="button is-primary">
+              Connect Wallet
+            </button>
           </div>
         </div>
       </nav>
-      <section>
+      <div>
         <div className="container">
-          <p>text</p>
+          <h2>Donut count: {donutsCount}</h2>
+          <h2>My donuts: {myDonutsCount}</h2>
+          <button onClick={buyDonut} className="button is-primary">
+            Buy donut
+          </button>
         </div>
-      </section>
+      </div>
     </div>
   )
 }
