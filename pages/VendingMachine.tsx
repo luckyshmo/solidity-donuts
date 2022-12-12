@@ -38,6 +38,19 @@ export default function VendingMachine() {
     }
   }
 
+  const restockDonut = async () => {
+    const restockAmount = ethers.BigNumber.from(1)
+    if (provider) {
+      const contract = getUserContract(provider)
+      contract.restock(restockAmount, {
+        gasPrice: 100,
+        gasLimit: 9000000,
+      })
+    } else {
+      alert('Please connect wallet')
+    }
+  }
+
   const getMyDonutsHandler = async (provider: any) => {
     const userAddress = await provider.getSigner().getAddress()
     const myDonuts = await vmContract.donutBalances(userAddress)
@@ -76,6 +89,9 @@ export default function VendingMachine() {
           <h2>My donuts: {myDonutsCount}</h2>
           <button onClick={buyDonut} className="button is-primary">
             Buy donut
+          </button>
+          <button onClick={restockDonut} className="button is-primary">
+            Restock
           </button>
         </div>
       </div>
